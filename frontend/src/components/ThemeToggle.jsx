@@ -5,10 +5,15 @@ import { ThemeContext } from '../context/ThemeContext';
 const ThemeToggle = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
+  // --- THE FIX ---
+  // Conditionally set the text and hover background colors based on the theme.
+  const iconColor = theme === 'dark' ? 'text-accent-cyan' : 'text-gray-600';
+  const hoverBg = theme === 'dark' ? 'hover:bg-dark-card' : 'hover:bg-gray-200';
+
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full text-accent-cyan hover:bg-dark-card"
+      className={`p-2 rounded-full transition-colors ${iconColor} ${hoverBg}`}
       aria-label="Toggle theme"
     >
       {theme === 'light' ? <FaMoon size={20} /> : <FaSun size={20} />}

@@ -1,31 +1,34 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel.js');
+ const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
+// This is our gatekeeper function
 const protect = async (req, res, next) => {
     let token;
 
-    // The token is expected in the format: "Bearer <token>"
+    // A valid request will have a header like: 'Authorization': 'Bearer <the_jwt_token>'
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
-            // Get token from header
+            // 1. Extract the token from the header (split by space and take the second part)
             token = req.headers.authorization.split(' ')[1];
 
-            // Verify the token using our secret
+            // 2. Verify the token's signature using the same secret from our .env file
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Get user from the token's ID and attach it to the request object
-            // We exclude the password from being attached
+            // 3. If the token is valid, it contains the user's ID.
+            //    Find that user in the database but exclude their password from the result.
             req.user = await User.findById(decoded.id).select('-password');
-
-            next(); // Move on to the next piece of middleware or the controller
+            
+            // 4. Everything is good. Call 'next()' to pass control to the actual route handler (the controller).
+            next();
         } catch (error) {
-            console.error(error);
+            console.error('Token verification failed', error);
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 
+    // If there's no token at all in the header
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        res.status(401).json({ message: 'Not authorized, no token provided' });
     }
 };
 

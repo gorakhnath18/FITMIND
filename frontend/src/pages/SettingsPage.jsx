@@ -11,7 +11,7 @@ const SettingsPage = () => {
         e.preventDefault();
         if (newPfpUrl) {
             updatePfp(newPfpUrl);
-            setNewPfpUrl(''); // Clear input after update
+            setNewPfpUrl('');  
         }
     };
     

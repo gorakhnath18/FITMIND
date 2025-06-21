@@ -1,68 +1,63 @@
- const bcrypt = 'bcryptjs';
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+ const User = require('../models/User');
 
-// Function to generate a JWT token
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
+// --- Gamification Rules  
+const dailyTasksConfig = [
+    { id: 1, text: 'Log 8 glasses of water', xp: 25 },
+    { id: 2, text: 'Complete a 30-min workout', xp: 100 },
+    { id: 3, text: 'Walk 5,000 steps', xp: 50 },
+    { id: 4, text: 'Follow diet plan', xp: 25 },
+];
 
-// @desc    Register a new user
-// @route   POST /api/users/register
-exports.registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+const LEVEL_THRESHOLDS = { 1: 0, 2: 200, 3: 500, 4: 1000, 5: 1800, 6: 3000 };
 
-    try {
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: 'User with this email already exists' });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-        });
-
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(400).json({ message: 'Invalid user data' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+// --- GET USER PROFILE LOGIC ---
+// @desc    Get the logged-in user's profile
+// @route   GET /api/users/profile
+exports.getUserProfile = async (req, res) => {
+    // Because our 'protect' middleware ran first, the full user object (minus password)
+    // is already attached to the request object as 'req.user'.
+    if (req.user) {
+        res.status(200).json(req.user);
+    } else {
+        res.status(404).json({ message: 'User not found' });
     }
 };
 
-// @desc    Authenticate a user & get token
-// @route   POST /api/users/login
-exports.loginUser = async (req, res) => {
-    const { email, password } = req.body;
+// --- COMPLETE DAILY TASK LOGIC ---
+// @desc    Update user XP and level for completing a task
+// @route   POST /api/users/tasks/complete
+exports.completeTask = async (req, res) => {
+    const { taskId } = req.body;
+    
+    // Find the task in our secure, backend configuration
+    const task = dailyTasksConfig.find(t => t.id === Number(taskId));
+    if (!task) {
+        return res.status(400).json({ message: 'Invalid Task ID' });
+    }
 
     try {
-        const user = await User.findOne({ email });
+        // The user is available from our 'protect' middleware
+        const user = req.user;
 
-        if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+        // Add the XP from the config to the user's current XP
+        user.xp += task.xp;
+
+        // Check if the user's new XP total crosses the threshold for the next level
+        const nextLevel = user.level + 1;
+        const xpForNextLevel = LEVEL_THRESHOLDS[nextLevel];
+
+        if (xpForNextLevel !== undefined && user.xp >= xpForNextLevel) {
+            user.level = nextLevel; // Level up!
         }
+
+        // Save the updated user document back to the database
+        const updatedUser = await user.save();
+
+        // Send the complete, updated user object back to the frontend
+        res.status(200).json(updatedUser);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Error completing task:', error);
+        res.status(500).json({ message: 'Server error while completing task' });
     }
 };

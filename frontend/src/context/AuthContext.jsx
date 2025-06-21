@@ -1,38 +1,74 @@
-import React, { createContext, useState, useContext } from 'react';
+ import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../services/api';
 
-const defaultPfp = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2EwYTBiMyI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTRjLTIuNzEgMC01LjE4LTEuNDQtNi43My0zLjU1QzYuOTYgMTQuNjIgOS4yMyAxNCAxMiAxNGM0IDAgNS41IDEuNSAxLjcgMy41NUMxNC43MSA4LjQzIDEwLjQxIDE5IDEyIDE5eiIvPjwvc3ZnPg==";
 const AuthContext = createContext(null);
 
- export const AuthProvider = ({ children }) => {
-     const [user, setUser] = useState({
-        name: 'Alex Pro',
-        email: 'alex.pro@example.com',
-        pfpUrl: defaultPfp,
-    });
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-     const login = (userData) => {
-         setUser({
-            name: userData.name || 'Test User',
-            email: userData.email,
-            pfpUrl: userData.pfpUrl || defaultPfp,
-        });
+    useEffect(() => {
+        try {
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                setUser(JSON.parse(userInfo));
+            }
+        } catch (error) {
+            console.error("Failed to parse user info from localStorage", error);
+            localStorage.removeItem('userInfo'); // Clear corrupted data
+        }
+        setLoading(false);
+    }, []);
+
+    const login = async (email, password) => {
+        const { data } = await api.post('/api/auth/login', { email, password });
+        if (data && data.token) {
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            setUser(data);
+        }
+        return data;
     };
     
-     const logout = () => {
-         setUser(null);
+    const register = async (name, email, password) => {
+        const { data } = await api.post('/api/auth/register', { name, email, password });
+        if (data && data.token) {
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            setUser(data);
+        }
+        return data;
     };
 
-     const updatePfp = (newUrl) => {
-        if (user) {
-            setUser({ ...user, pfpUrl: newUrl || defaultPfp });
-         }
+    const logout = () => {
+        localStorage.removeItem('userInfo');
+        setUser(null);
+    };
+    
+    // This is the most robust way to update state that depends on previous state.
+    const updateUserState = (newUserDataFromServer) => {
+        setUser(prevUser => {
+            // Ensure we always have a previous user and their token
+            if (!prevUser || !prevUser.token) {
+                console.error("Update user state called without a valid previous session. Aborting.");
+                return prevUser; // Abort update if token is missing
+            }
+            const updatedUser = {
+                ...prevUser, // Preserves the token and other non-updated fields
+                ...newUserDataFromServer, // Overwrites fields like level and xp
+            };
+            localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
 
-    const value = { user, login, logout, updatePfp };
+    const value = { user, loading, login, register, logout, updateUserState };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
 };
 
- export const useAuth = () => {
+export const useAuth = () => {
     return useContext(AuthContext);
 };

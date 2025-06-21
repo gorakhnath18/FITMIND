@@ -1,12 +1,16 @@
  import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';  
 
 const HomePage = () => {
   const { theme } = useContext(ThemeContext);
+  const { user } = useAuth();  
+
+   const generatePlanLink = user ? '/generate-plan' : '/register';
   
-  const headingClasses = 'text-white'; // Always white for readability on the image
-  const subtextColor = 'text-gray-200'; // Lighter gray for the same reason
+  const headingClasses = 'text-white';  
+  const subtextColor = 'text-gray-200';  
   const cardClasses = theme === 'dark' 
     ? 'bg-dark-card/60 backdrop-blur-md border border-gray-700/60' 
     : 'bg-white shadow-xl border border-gray-200';
@@ -24,28 +28,30 @@ const HomePage = () => {
       {/* --- HERO SECTION (UPDATED) --- */}
       <section className="relative text-center py-24 lg:py-40">
         
-        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/hero-background.jpg" 
             alt="Fitness motivation background" 
             className="w-full h-full object-cover"
           />
-          {/* Dark Overlay for text readability */}
           <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
 
-        {/* Content */}
         <div className="container mx-auto px-4 relative z-10">
           <h1 className={`text-4xl lg:text-6xl font-extrabold ${headingClasses}`}>Evolve Your Fitness. Empower Your Mind.</h1>
           <p className={`mt-6 text-lg lg:text-xl max-w-3xl mx-auto ${subtextColor}`}>Unlock your potential with hyper-personalized workout and nutrition plans.</p>
-          <Link to="/generate-plan" className="mt-10 inline-block bg-purple-500 text-black font-bold text-lg px-10 py-4 rounded-md shadow-purple-800 hover:shadow-purple-950 transition-all transform hover:scale-105">
+          
+          {/* 4. Use the new conditional link variable in the 'to' prop */}
+          <Link 
+            to={generatePlanLink} 
+            className="mt-10 inline-block bg-purple-500 text-white font-bold text-lg px-10 py-4 rounded-md shadow-lg shadow-purple-500/50 hover:shadow-purple-700/50 transition-all transform hover:scale-105"
+          >
             Generate My AI Plan
           </Link>
         </div>
       </section>
 
-      {/* --- FEATURES SECTION (No changes needed here) --- */}
+      {/* --- FEATURES SECTION --- */}
       <section className={`py-20 ${theme === 'light' ? 'bg-gray-50' : 'bg-transparent'}`}>
         <div className="container mx-auto px-6 text-center">
           <h2 className={`text-3xl font-bold mb-16 ${theme === 'dark' ? 'text-white' : 'bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent'}`}>The Future of Fitness is Here</h2>

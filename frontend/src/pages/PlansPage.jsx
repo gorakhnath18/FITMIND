@@ -10,8 +10,7 @@ const PlansPage = () => {
   const subtextColor = theme === 'dark' ? 'text-gray-300' : 'text-gray-600';
 
   return (
-    // Add px-4 for consistent mobile padding
-    <section className={`py-20 px-4 ${theme === 'light' ? 'bg-white' : 'bg-transparent'}`}>
+     <section className={`py-20 px-4 ${theme === 'light' ? 'bg-white' : 'bg-transparent'}`}>
       <div className="container mx-auto text-center">
         <h2 className={`text-3xl md:text-4xl font-extrabold mb-4 ${headingClasses}`}>Choose Your Plan</h2>
         <p className={`mb-16 max-w-2xl mx-auto ${subtextColor}`}>Start your journey with a plan that fits your needs.</p>
@@ -25,7 +24,7 @@ const PlansPage = () => {
                 <div className={`p-8 text-center rounded-xl transform hover:-translate-y-2 transition-all duration-300 relative ${cardClasses} ${plan.isPopular ? 'border-4 border-accent-purple' : ''}`}>
                   {plan.isPopular && <span className={`bg-accent-purple text-xs font-bold px-3 py-1 rounded-full uppercase absolute -top-4 right-4 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>Popular</span>}
                   <h3 className={`text-2xl font-bold mb-2 ${cardHeadingColor}`}>{plan.title}</h3>
-                  <p className={`text-4xl font-extrabold mb-4 ${cardHeadingColor}`}> ₹ {plan.price}<span className="text-base font-medium text-gray-500">/mo</span></p>
+                  <p className={`text-4xl font-extrabold mb-4 ${cardHeadingColor}`}> ₹ {plan.price}<span className="text-base font-medium text-gray-500">/month</span></p>
                   <ul className="text-left space-y-3 mb-8">
                     {plan.features.map((feature) => <li key={feature} className={`flex items-center ${featureTextColor}`}><FaCheckCircle className="text-green-500 mr-3 flex-shrink-0" /><span>{feature}</span></li>)}
                   </ul>
