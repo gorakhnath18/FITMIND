@@ -1,0 +1,70 @@
+/* Basic Calendar Styling */
+.react-calendar {
+  width: 100%;
+  border: 1px solid #4a5568; /* a neutral border */
+  border-radius: 0.75rem;
+  background-color: transparent;
+  padding: 1rem;
+}
+
+/* Navigation buttons (e.g., < >) */
+.react-calendar__navigation button {
+  color: #9ca3af;
+  min-width: 44px;
+  background: none;
+  font-size: 16px;
+  margin-top: 8px;
+}
+.react-calendar__navigation button:hover {
+  background-color: #374151;
+}
+
+/* Day tiles */
+.react-calendar__tile {
+  background: none;
+  text-align: center;
+  line-height: 16px;
+  font-size: 14px;
+  padding: 10px 6.6667px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.react-calendar__tile:disabled {
+  color: #6b7280;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #374151;
+}
+
+/* Today's date */
+.react-calendar__tile--now {
+  background: #8b5cf633; /* A faint purple for today */
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background: #8b5cf666;
+}
+
+/* Active/selected date */
+.react-calendar__tile--active {
+  background: #8b5cf6;
+  color: white;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #a78bfa;
+}
+
+/* Style for completed day tiles */
+.react-calendar__tile.completed-day {
+    background-color: #10b981; /* Green for completed */
+    color: white;
+}
+.react-calendar__tile.completed-day:hover {
+    background-color: #34d399;
+}
