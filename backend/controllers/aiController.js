@@ -7,7 +7,7 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash-latest",
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: { response_mime_type: "application/json" }
 });
 
 const createAnimationName = (exerciseName) => {
@@ -69,9 +69,7 @@ The JSON object must have two top-level keys: "workoutPlan" and "nutritionPlan".
     - The "dailyMeals" array must contain EXACTLY ${meals} meal objects.
     - Each meal object must have keys: "mealName" (string, e.g., "Breakfast"), "foodItems" (string, list foods and portions using hyphens and newlines, e.g., "- Dal Tadka (1 katori)\\n- Brown Rice (1 small bowl)"), "nutritionInfo" (string, e.g., "(Calories: ~450 kcal, P: ~20g, C: ~60g, F: ~15g)"), and "alternatives" (string, 1-2 simple alternatives).
     - The meal plan must use simple, affordable, staple Indian ingredients. AVOID expensive or exotic ingredients.
-    {/* --- THIS IS THE FIX --- */}
-    {/* Use the correctly declared variable here */}
-    - ${nutritionPromptSection} 
+    ${nutritionPromptSection}
 
 EXAMPLE OF THE FINAL JSON OBJECT:
 {
